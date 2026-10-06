@@ -1,24 +1,35 @@
-# BlitZ Android App
+name: Build Android APK
 
-Native Android project for the BlitZ key-verification app.
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
 
-Included:
-- BlitZ branding and supplied DP
-- Native Android rain animation
-- Supplied MP3 bundled in `app/src/main/res/raw/blitz_music.mp3`
-- Demo key verification
-- Android ID shown as a HWID-style identifier
-- Play Store-ready applicationId structure
+jobs:
+  build:
+    runs-on: ubuntu-latest
 
-Demo keys:
-- `BLITZ-DEMO-2026`
-- `BLITZ-PRO-2026`
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
 
-## Important
-The included verifier is intentionally a local demo. For a real production key system, move key validation to a secure server/API; never ship a master key list in the APK. Add authentication, key expiry, revocation, rate limiting and server-side device binding.
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
 
-## Build
-Open this folder in Android Studio and let Gradle sync. Then use:
-Build > Generate App Bundle(s) / APK(s)
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.7'
 
-For Play Store publishing, create a signed release App Bundle (.aab) and complete the Play Console requirements.
+      - name: Build APK
+        run: gradle assembleDebug
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: BlitZ-debug-apk
+          path: '**/build/outputs/apk/**/*.apk'
